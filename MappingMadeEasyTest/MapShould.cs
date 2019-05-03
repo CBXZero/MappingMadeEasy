@@ -223,5 +223,27 @@ namespace MappingMadeEasyTest
                 CollectionAssert.AreEquivalent(model.RandomData, match.RandomData);
             }
         }
+
+        [TestMethod]
+        public void ReturnNewModelWithPreviousModelValuesWhenBothModelHasAnArrayOfChildModels()
+        {
+            var sut = new Mapper();
+            var testModel = RandomValue.Object<TestModelWithChildModelArray>();
+            var resultModel = sut.Map<TestModelWithChildModelArray, TestModelWithChildModelArrayAlternative>(testModel);
+
+            Assert.AreEqual(testModel.Age, resultModel.Age);
+            Assert.AreEqual(testModel.Name, resultModel.Name);
+            Assert.AreEqual(testModel.TestModels.Length, resultModel.TestModels.Length);
+
+            foreach (var model in testModel.TestModels)
+            {
+                var match = resultModel.TestModels.FirstOrDefault(m => m.PersonName == model.Name);
+
+                Assert.IsNotNull(match);
+                Assert.AreEqual(model.Age, match.CurrentAge);
+                Assert.AreEqual(model.Salary, match.CurrentSalary);
+                CollectionAssert.AreEquivalent(model.RandomData, match.RandomData);
+            }
+        }
     }
 }

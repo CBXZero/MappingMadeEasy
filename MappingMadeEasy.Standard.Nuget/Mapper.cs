@@ -37,25 +37,19 @@ namespace MappingMadeEasy.Standard.Nuget
             {
                 foreach (var propertyToMap in typeof(TModelToMapToo).GetProperties().Where(x => x.GetCustomAttribute<MapToName>(false)?.Name == property.ModelPropertyName))
                 {
-                    if (property.Value != null && IsClassMappableModel(property.Value, baseNamespaces))
-                    {
-                        var mappedValue = MapChildModel(property, propertyToMap, strict);
-
-                        propertyToMap.SetValue(objectToMapToo, mappedValue);
-                    }
-                    else if (typeof(IList).IsAssignableFrom(property.PropertyType)
-                                && property.Value != null)
+                    if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string)
+                                                                                    && property.Value != null)
                     {
                         var mappedList = Activator.CreateInstance(propertyToMap.PropertyType);
 
-                        foreach (var value in (IList) property.Value)
+                        foreach (var value in (IList)property.Value)
                         {
                             var listTypeToMapToo = propertyToMap.PropertyType.GetGenericArguments()[0];
                             if (value != null && IsClassMappableModel(value, baseNamespaces))
                             {
                                 var mappedValue = MapModelInList(value, listTypeToMapToo, strict);
 
-                                ((IList) mappedList).Add(mappedValue);
+                                ((IList)mappedList).Add(mappedValue);
                             }
                             else
                             {
@@ -65,6 +59,12 @@ namespace MappingMadeEasy.Standard.Nuget
 
                         propertyToMap.SetValue(objectToMapToo, mappedList);
                     }
+                    else if (property.Value != null && IsClassMappableModel(property.Value, baseNamespaces))
+                    {
+                        var mappedValue = MapChildModel(property, propertyToMap, strict);
+
+                        propertyToMap.SetValue(objectToMapToo, mappedValue);
+                    } 
                     else
                     {
                         propertyToMap.SetValue(objectToMapToo, property.Value);
